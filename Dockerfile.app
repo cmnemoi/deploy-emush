@@ -9,22 +9,13 @@ FROM node:lts-alpine AS builder
 WORKDIR /app
 
 # Copy package files for dependency caching
-COPY emush/App/package.json emush/App/yarn.lock ./
+COPY emush/App/ ./
 
 # Install dependencies with frozen lockfile for reproducible builds
 RUN yarn install --frozen-lockfile --production=false
 
 # Copy .env file for build-time environment variables
 COPY .env ./
-
-# Copy source code
-COPY emush/App/public ./public
-COPY emush/App/src ./src
-COPY emush/App/vite.config.js ./vite.config.js
-COPY emush/App/index.html ./index.html
-COPY emush/App/offline.html ./offline.html
-COPY emush/App/package.json ./package.json
-COPY emush/App/tsconfig.json ./tsconfig.json
 
 # Build the application for production
 RUN yarn build

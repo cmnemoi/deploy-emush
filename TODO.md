@@ -1,0 +1,4 @@
+- [ ] Mettre en place un traefik en tant que reverse proxy
+- [ ] Générer tous les secrets / MDP nécessaires à partir du .env.example au lieu de les hardcoder
+- [x] Mettre en place une DB Postgres pour Eternaltwin en s'inspirant de emush/docker/Database
+- [ ] Essayer de voir pour le zero downtiume deployement

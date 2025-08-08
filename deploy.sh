@@ -30,10 +30,11 @@ launch_app() {
     echo -e "${YELLOW}Launching app...${NC}"
     docker compose down
     docker volume rm -f emush_api-public
-    docker compose up --build --force-recreate --remove-orphans -d --wait --wait-timeout 10
-    docker exec emush-api php bin/console mush:migrate
-    echo -e "${GREEN}App launched${NC}"
-    echo -e "Access the app at http://localhost:5173"
+    docker compose build
+    docker compose run emush-api php bin/console mush:migrate
+    docker compose run emush-eternaltwin yarn eternaltwin db sync
+    docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
+    echo -e "${GREEN}App launched at http://localhost:5173${NC}"
 }
 
 main() {

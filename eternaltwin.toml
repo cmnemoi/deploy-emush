@@ -1,3 +1,13 @@
+[backend]
+store = "Postgres"
+
+[postgres]
+host = "emush-database"
+port = 5432
+name = "eternaltwin.prod"
+user = "emush"
+password = "emush_password"
+
 [seed.app.emush_production]
 display_name = "eMush"
 uri = "http://localhost/"
