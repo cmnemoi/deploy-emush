@@ -1,0 +1,3 @@
+[submodule "emush"]
+	path = emush
+	url = https://gitlab.com/eternaltwin/mush/mush.git

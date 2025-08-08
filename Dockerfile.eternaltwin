@@ -1,0 +1,15 @@
+FROM node:lts-slim
+
+ARG UID=1000
+ARG GID=1000
+
+RUN apt-get update && apt-get install -y curl
+
+COPY emush/Eternaltwin/package.json ./
+COPY eternaltwin.toml ./eternaltwin.toml
+
+RUN yarn install --production=false
+
+USER node
+
+CMD ["yarn", "eternaltwin", "start"]

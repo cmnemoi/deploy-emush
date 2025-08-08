@@ -1,0 +1,24 @@
+FROM nginx:stable-alpine
+
+ARG APP_DIR=/var/www/html
+
+RUN apk add --no-cache bash curl && \
+    addgroup -S www && adduser -S www -G www
+
+WORKDIR ${APP_DIR}
+
+# Copy only the public directory needed by Nginx to serve assets and front controller
+COPY emush/Api/public ${APP_DIR}/public
+
+# Nginx configuration
+COPY nginx.api.conf /etc/nginx/nginx.conf
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
+    CMD curl -fsS http://localhost/health || exit 1
+
+# Run Nginx in foreground
+CMD ["nginx", "-g", "daemon off;"]
+
+
