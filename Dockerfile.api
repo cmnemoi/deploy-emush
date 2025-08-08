@@ -41,11 +41,10 @@ WORKDIR /var/www/html
 # Copy vendor from base stage
 COPY --from=base /var/www/html/vendor ./vendor
 
-# Set production environment
-COPY .env ./
-
-# Generate JWT certificates
-RUN php bin/console lexik:jwt:generate-keypair --no-interaction
+# Ensure JWT directory exists and is writable by application user
+RUN mkdir -p config/jwt \
+    && chown -R www-data:www-data config/jwt \
+    && chmod 700 config/jwt
 
 # Warm up cache and set permissions
 RUN php bin/console cache:clear --env=prod --no-debug \

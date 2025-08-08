@@ -86,6 +86,7 @@ services:
       - emush-database
     volumes:
       - api-public:/var/www/html/public
+      - jwt-keys:/var/www/html/config/jwt
     healthcheck:
       test: ["CMD", "php-fpm", "-t"]
       interval: 30s
@@ -128,6 +129,8 @@ services:
     networks:
       - emush-network
     restart: unless-stopped
+    volumes:
+      - ./eternaltwin.local.toml:/eternaltwin.toml:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost:50320/ || exit 1"]
       interval: 30s
@@ -144,6 +147,8 @@ volumes:
   emush-database-data:
     driver: local
   api-public:
+    driver: local
+  jwt-keys:
     driver: local
 
 networks:
