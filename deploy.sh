@@ -37,10 +37,13 @@ upsert_env_var() {
     # Usage: upsert_env_var KEY VALUE (value will be quoted in file)
     local key="$1"
     local value="$2"
+    # Escape sed replacement specials (| and &). Using '|' delimiter to avoid '/' conflicts
+    local escaped
+    escaped=$(printf '%s' "${value}" | sed -e 's/[|&\\]/\\&/g')
     if grep -q "^${key}=" .env; then
-        sed -i "s/^${key}=.*/${key}=\"${value}\"/" .env
+        sed -i -E "s|^${key}=.*|${key}=\"${escaped}\"|" .env
     else
-        echo "${key}=\"${value}\"" >> .env
+        echo "${key}=\"${escaped}\"" >> .env
     fi
 }
 
@@ -48,8 +51,8 @@ update_release_metadata() {
     local commit_hash="$1"
     local release_channel
     release_channel="$(hostname)"
-    sed -i "s/^VITE_APP_API_RELEASE_COMMIT=.*/VITE_APP_API_RELEASE_COMMIT=\"${commit_hash}\"/" .env
-    sed -i "s/^VITE_APP_API_RELEASE_CHANNEL=.*/VITE_APP_API_RELEASE_CHANNEL=\"${release_channel}\"/" .env
+    sed -i -E "s|^VITE_APP_API_RELEASE_COMMIT=.*|VITE_APP_API_RELEASE_COMMIT=\"${commit_hash}\"|" .env
+    sed -i -E "s|^VITE_APP_API_RELEASE_CHANNEL=.*|VITE_APP_API_RELEASE_CHANNEL=\"${release_channel}\"|" .env
 }
 
 ensure_app_secret() {
@@ -78,12 +81,85 @@ ensure_jwt_passphrase() {
     fi
 }
 
+generate_strong_alnum_secret() {
+    # Generates a 40-char alphanumeric secret to avoid encoding/escaping issues
+    LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 40
+}
+
+db_volume_initialized() {
+    # Returns 0 if the Postgres data volume folder is non-empty, else 1
+    local volume_path
+    volume_path=$(docker volume inspect emush_emush-database-data -f '{{ .Mountpoint }}' 2>/dev/null || true)
+    if [ -z "$volume_path" ] || [ ! -d "$volume_path" ]; then
+        return 1
+    fi
+    if [ "$(ls -A "$volume_path" 2>/dev/null | wc -l)" -gt 0 ]; then
+        return 0
+    fi
+    return 1
+}
+
+sync_postgres_password_in_toml() {
+    # Usage: sync_postgres_password_in_toml PASSWORD
+    local password="$1"
+    if [ -f eternaltwin.local.toml ]; then
+        sed -i -E '/^\[postgres\]/,/^\[/{s|^password = ".*"|password = "'"${password}"'"|}' eternaltwin.local.toml || true
+    fi
+}
+
+sync_etwin_admin_password_in_toml() {
+    # Usage: sync_etwin_admin_password_in_toml PASSWORD
+    local password="$1"
+    if [ -f eternaltwin.local.toml ]; then
+        sed -i -E '/^\[seed.user.admin\]/,/^\[/{s|^password = ".*"|password = "'"${password}"'"|}' eternaltwin.local.toml || true
+    fi
+}
+
+ensure_db_password_and_sync() {
+    local current
+    current="$(read_env_var POSTGRES_PASSWORD)"
+
+    if [ -z "${current:-}" ] || [ "${current}" = "__GENERATED_ON_FIRST_DEPLOY__" ]; then
+        if db_volume_initialized; then
+            echo -e "${RED}ERROR:${NC} Postgres volume already initialized but POSTGRES_PASSWORD is missing. Set it in .env to the existing DB password or remove the volume if data can be discarded: docker volume rm emush_emush-database-data"
+            exit 1
+        fi
+        local new_db_pass
+        new_db_pass="$(generate_strong_alnum_secret)"
+        upsert_env_var POSTGRES_PASSWORD "${new_db_pass}"
+        local new_db_url
+        new_db_url="postgresql://emush:${new_db_pass}@emush-database:5432/emush?serverVersion=17"
+        upsert_env_var DATABASE_URL "${new_db_url}"
+        log_ok "Generated POSTGRES_PASSWORD and updated DATABASE_URL"
+        sync_postgres_password_in_toml "${new_db_pass}"
+    else
+        # Ensure TOML is synced from existing value
+        sync_postgres_password_in_toml "${current}"
+        log_warn "POSTGRES_PASSWORD already set, synced to eternaltwin.local.toml"
+    fi
+}
+
+ensure_etwin_admin_password_and_sync() {
+    local current
+    current="$(read_env_var ETERNALTWIN_ADMIN_PASSWORD)"
+    if [ -z "${current:-}" ] || [ "${current}" = "__GENERATED_ON_FIRST_DEPLOY__" ]; then
+        local new_admin_pass
+        new_admin_pass="$(generate_strong_alnum_secret)"
+        upsert_env_var ETERNALTWIN_ADMIN_PASSWORD "${new_admin_pass}"
+        sync_etwin_admin_password_in_toml "${new_admin_pass}"
+        log_ok "Generated ETERNALTWIN_ADMIN_PASSWORD and updated eternaltwin.local.toml"
+    else
+        sync_etwin_admin_password_in_toml "${current}"
+        log_warn "ETERNALTWIN_ADMIN_PASSWORD already set, synced to eternaltwin.local.toml"
+    fi
+}
+
 sync_etwin_secret_in_toml() {
     # Usage: sync_etwin_secret_in_toml SECRET
     local secret="$1"
     if [ -f eternaltwin.local.toml ]; then
         # Update only within the [seed.app.emush_production] section
-        sed -i '/^\[seed.app.emush_production\]/,/^\[/{s/^secret = \".*\"/secret = \"'"${secret}"'\"/}' eternaltwin.local.toml || true
+        sed -i -E '/^\[seed.app.emush_production\]/,/^\[/{s|^secret = ".*"|secret = "'"${secret}"'"|}' eternaltwin.local.toml || true
     fi
 }
 
@@ -125,6 +201,8 @@ setup_env_variables() {
     update_release_metadata "${commit_hash}"
     ensure_app_secret
     ensure_jwt_passphrase
+    ensure_db_password_and_sync
+    ensure_etwin_admin_password_and_sync
     ensure_oauth_secret_and_sync
     restrict_sensitive_permissions
     log_ok "Environment variables set"
@@ -135,9 +213,9 @@ launch_app() {
     echo -e "${YELLOW}Launching app...${NC}"
     docker compose build
     docker compose run --rm emush-api php bin/console lexik:jwt:generate-keypair --no-interaction --overwrite
-    docker compose run --rm emush-api php bin/console mush:migrate
     docker compose run --rm emush-eternaltwin yarn eternaltwin db sync
     docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
+    docker compose run --rm emush-api php bin/console mush:migrate
     echo -e "${GREEN}App launched at ${APP_URL}${NC}"
 }
 

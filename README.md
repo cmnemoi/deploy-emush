@@ -13,7 +13,6 @@ make deploy
 
 - Provision a server
 - Configure the server for basic security
-- Configure secrets and passwords
 - Deploy mode : Bleeding edge or stable
 
 # License
