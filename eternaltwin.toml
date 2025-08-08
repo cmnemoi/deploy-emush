@@ -10,10 +10,11 @@ password = "emush_password"
 
 [seed.app.emush_production]
 display_name = "eMush"
-uri = "http://localhost/"
-oauth_callback = "http://localhost:8080/oauth/callback"
+uri = "http://emush.localhost/"
+oauth_callback = "http://api.emush.localhost/oauth/callback"
 secret = "my_super_eternaltwin_oauth_secret"
 
 [seed.user.admin]
 username = "admin"
 password = "9yD5hiim2BbVGLH"
+is_administrator = true

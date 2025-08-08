@@ -27,14 +27,13 @@ setup_env_variables() {
 }
 
 launch_app() {
+    APP_URL=$(grep -oP 'VITE_APP_URL="\K[^"]+' .env)
     echo -e "${YELLOW}Launching app...${NC}"
-    docker compose down
-    docker volume rm -f emush_api-public
     docker compose build
     docker compose run emush-api php bin/console mush:migrate
     docker compose run emush-eternaltwin yarn eternaltwin db sync
     docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
-    echo -e "${GREEN}App launched at http://localhost:5173${NC}"
+    echo -e "${GREEN}App launched at ${APP_URL}${NC}"
 }
 
 main() {
