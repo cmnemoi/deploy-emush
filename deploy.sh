@@ -261,7 +261,7 @@ launch_app() {
 	if [ -z "${domain:-}" ]; then
 		domain="localhost"
 	fi
-	APP_URL="http://${domain}/"
+	APP_URL="http://emush.${domain}/"
     echo -e "${YELLOW}Launching app...${NC}"
     docker compose build
     docker compose run --rm emush-api php bin/console lexik:jwt:generate-keypair --no-interaction --skip-if-exists
