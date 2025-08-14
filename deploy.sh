@@ -29,14 +29,14 @@ ensure_env_files() {
 
 prompt_for_domain() {
 	# Ask user for domain and persist to .env
-	# Defaults to existing value or "emush.localhost" if missing
+	# Defaults to existing value or "localhost" if missing
 	local current
 	current="$(read_env_var DOMAIN)"
 	if [ -z "${current:-}" ]; then
-		current="emush.localhost"
+		current="localhost"
 	fi
 	# Only prompt if still at default value
-	if [ "${current}" != "emush.localhost" ]; then
+	if [ "${current}" != "localhost" ]; then
 		return 0
 	fi
 	printf "%s" "Enter domain name for this deployment [${current}]: "
@@ -209,10 +209,10 @@ sync_etwin_domain_in_toml() {
 	local domain uri oauth_cb
 	domain="$(read_env_var DOMAIN)"
 	if [ -z "${domain:-}" ]; then
-		domain="emush.localhost"
+		domain="localhost"
 	fi
-	uri="http://${domain}/"
-	oauth_cb="http://api.${domain}/oauth/callback"
+	uri="http://emush.${domain}/"
+	oauth_cb="http://api.emush.${domain}/oauth/callback"
 	if [ -f eternaltwin.local.toml ]; then
 		# Update only within the [seed.app.emush_production] section
 		sed -i -E '/^\[seed.app.emush_production\]/,/^\[/{s|^uri = ".*"|uri = "'"${uri}"'"|}' eternaltwin.local.toml || true
@@ -259,7 +259,7 @@ launch_app() {
 	local domain
 	domain="$(read_env_var DOMAIN)"
 	if [ -z "${domain:-}" ]; then
-		domain="emush.localhost"
+		domain="localhost"
 	fi
 	APP_URL="http://${domain}/"
     echo -e "${YELLOW}Launching app...${NC}"
