@@ -264,7 +264,7 @@ launch_app() {
 	APP_URL="http://${domain}/"
     echo -e "${YELLOW}Launching app...${NC}"
     docker compose build
-    docker compose run --rm emush-api php bin/console lexik:jwt:generate-keypair --no-interaction --overwrite
+    docker compose run --rm emush-api php bin/console lexik:jwt:generate-keypair --no-interaction
     docker compose run --rm emush-eternaltwin yarn eternaltwin db sync
     docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
     docker compose run --rm emush-api php bin/console mush:migrate
