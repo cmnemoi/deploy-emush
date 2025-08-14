@@ -223,6 +223,8 @@ restrict_sensitive_permissions() {
 
 pull_latest_code() {
     log_info "Pulling latest code..."
+    git fetch origin
+    git pull origin main
     cd emush
     git fetch origin
     git checkout develop
