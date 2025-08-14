@@ -7,6 +7,6 @@ deploy:
 
 .PHONY: hard-reset
 hard-reset:
-	rm -rf .env eternaltwin.local.toml
 	docker compose down --volumes --remove-orphans
+	rm -rf .env eternaltwin.local.toml
 	./deploy.sh
