@@ -307,10 +307,9 @@ launch_app() {
     docker compose build
     docker compose run --rm emush-api php bin/console lexik:jwt:generate-keypair --no-interaction --skip-if-exists
     docker compose run --rm emush-eternaltwin yarn eternaltwin db sync
+    ensure_admin_id_from_database
     docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
     docker compose run --rm emush-api php bin/console mush:migrate
-    ensure_admin_id_from_database
-    docker compose restart emush-api
     echo -e "${GREEN}App launched at ${APP_URL}${NC}"
     log_info "You can connect with admin account:"
     log_info "  - username: admin"
