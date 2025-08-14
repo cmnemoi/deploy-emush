@@ -10,3 +10,8 @@ hard-reset:
 	docker compose down --volumes --remove-orphans
 	rm -rf .env eternaltwin.local.toml
 	./deploy.sh
+
+.PHONY: restart
+restart:
+	docker compose down --remove-orphans
+	docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
