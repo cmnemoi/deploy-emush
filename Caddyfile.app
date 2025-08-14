@@ -21,7 +21,7 @@
         X-XSS-Protection "1; mode=block"
         X-Content-Type-Options "nosniff"
         Referrer-Policy "no-referrer-when-downgrade"
-        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data: https:; img-src 'self' data: https: blob:; connect-src 'self' http://api.{$DOMAIN}/ https: wss:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self';"
+        Content-Security-Policy "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data: https:; img-src 'self' data: https: blob:; connect-src 'self' http://api.emush.{$DOMAIN}/ https: wss:; media-src 'self' data: blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self';"
     }
     
     # Cache static assets
