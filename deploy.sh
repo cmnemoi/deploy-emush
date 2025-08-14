@@ -257,6 +257,8 @@ setup_env_variables() {
 launch_app() {
 	# Compute APP_URL from DOMAIN set in .env
 	local domain
+    local admin_pass
+    admin_pass="$(read_env_var ETERNALTWIN_ADMIN_PASSWORD)"
 	domain="$(read_env_var DOMAIN)"
 	if [ -z "${domain:-}" ]; then
 		domain="localhost"
@@ -269,6 +271,7 @@ launch_app() {
     docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
     docker compose run --rm emush-api php bin/console mush:migrate
     echo -e "${GREEN}App launched at ${APP_URL}${NC}"
+    log_info "You can connect with admin account: admin / ${admin_pass} (please change it)"
 }
 
 main() {
