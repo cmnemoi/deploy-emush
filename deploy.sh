@@ -271,7 +271,9 @@ launch_app() {
     docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
     docker compose run --rm emush-api php bin/console mush:migrate
     echo -e "${GREEN}App launched at ${APP_URL}${NC}"
-    log_info "You can connect with admin account: admin / ${admin_pass} (please change it)"
+    log_info "You can connect with admin account:"
+    log_info "  - username: admin"
+    log_info "  - password: ${admin_pass} (please change it)"
 }
 
 main() {
