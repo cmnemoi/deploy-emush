@@ -35,6 +35,10 @@ prompt_for_domain() {
 	if [ -z "${current:-}" ]; then
 		current="emush.localhost"
 	fi
+	# Only prompt if still at default value
+	if [ "${current}" != "emush.localhost" ]; then
+		return 0
+	fi
 	printf "%s" "Enter domain name for this deployment [${current}]: "
 	read -r input || input=""
 	# Use default when user presses Enter
