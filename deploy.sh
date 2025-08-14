@@ -211,8 +211,8 @@ sync_etwin_domain_in_toml() {
 	if [ -z "${domain:-}" ]; then
 		domain="localhost"
 	fi
-	uri="http://emush.${domain}/"
-	oauth_cb="http://api.emush.${domain}/oauth/callback"
+	uri="https://emush.${domain}/"
+	oauth_cb="https://api.emush.${domain}/oauth/callback"
 	if [ -f eternaltwin.local.toml ]; then
 		# Update only within the [seed.app.emush_production] section
 		sed -i -E '/^\[seed.app.emush_production\]/,/^\[/{s|^uri = ".*"|uri = "'"${uri}"'"|}' eternaltwin.local.toml || true
