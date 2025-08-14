@@ -5,7 +5,7 @@ An autonomous repository to deploy / self-host [eMush](https://gitlab.com/eterna
 # Usage
 
 ```
-git clone --recursive https://github.com/cmnemoi/deploy-emush.git
+git clone --recurse-submodules https://github.com/cmnemoi/deploy-emush.git www && cd www
 make deploy
 ```
 
