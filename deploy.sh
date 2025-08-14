@@ -204,6 +204,45 @@ ensure_oauth_secret_and_sync() {
     fi
 }
 
+ensure_admin_id_from_database() {
+    local current
+    current="$(read_env_var ADMIN)"
+    if [ -z "${current:-}" ] || [ "${current}" = "your-etwin-id-here" ]; then
+        log_info "Attempting to retrieve admin ID from database..."
+        
+        # Wait for database to be ready
+        local max_attempts=30
+        local attempt=1
+        while [ $attempt -le $max_attempts ]; do
+            if docker compose exec -T emush-database pg_isready -U emush >/dev/null 2>&1; then
+                break
+            fi
+            log_info "Waiting for database to be ready... (attempt $attempt/$max_attempts)"
+            sleep 2
+            attempt=$((attempt + 1))
+        done
+        
+        if [ $attempt -gt $max_attempts ]; then
+            log_warn "Database not ready after $max_attempts attempts, skipping admin ID retrieval"
+            return 0
+        fi
+        
+        # Try to get admin ID from database
+        local admin_id
+        admin_id=$(docker compose exec -T emush-database psql -U emush -d "eternaltwin.prod" -t -c "SELECT users.user_id FROM users INNER JOIN user_username_history uuh ON users.user_id = uuh.user_id WHERE username = 'admin';" 2>/dev/null | tr -d ' \n' || echo "")
+        
+        if [ -n "${admin_id:-}" ] && [ "${admin_id}" != "0" ]; then
+            upsert_env_var ADMIN "${admin_id}"
+            log_ok "Retrieved admin ID from database: ${admin_id}"
+        else
+            log_warn "Could not retrieve admin ID from database, keeping placeholder value"
+            log_info "You may need to manually set ADMIN in .env after first login"
+        fi
+    else
+        log_warn "ADMIN already set to: ${current}"
+    fi
+}
+
 sync_etwin_domain_in_toml() {
 	# Sync domain-dependent URIs in eternaltwin.local.toml
 	local domain uri oauth_cb
@@ -270,6 +309,8 @@ launch_app() {
     docker compose run --rm emush-eternaltwin yarn eternaltwin db sync
     docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
     docker compose run --rm emush-api php bin/console mush:migrate
+    ensure_admin_id_from_database
+    docker compose restart emush-api
     echo -e "${GREEN}App launched at ${APP_URL}${NC}"
     log_info "You can connect with admin account:"
     log_info "  - username: admin"
