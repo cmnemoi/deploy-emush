@@ -134,7 +134,7 @@ services:
     container_name: emush-eternaltwin
     build:
       context: .
-    dockerfile: Dockerfile.eternaltwin
+      dockerfile: Dockerfile.eternaltwin
     depends_on:
       - emush-database
     networks:
