@@ -36,7 +36,7 @@ services:
       - api-public:/var/www/html/public:ro
     labels:
       - traefik.enable=true
-      - traefik.http.routers.emush-api.rule=Host(`api.emush.localhost`)
+      - traefik.http.routers.emush-api.rule=Host(`api.${DOMAIN}`)
       - traefik.http.routers.emush-api.entrypoints=web
       - traefik.http.services.emush-api.loadbalancer.server.port=80
     healthcheck:
@@ -60,7 +60,7 @@ services:
       - emush-web
     labels:
       - traefik.enable=true
-      - traefik.http.routers.emush-app.rule=Host(`emush.localhost`)
+      - traefik.http.routers.emush-app.rule=Host(`${DOMAIN}`)
       - traefik.http.routers.emush-app.entrypoints=web
       - traefik.http.services.emush-app.loadbalancer.server.port=5173
     healthcheck:
@@ -137,7 +137,7 @@ services:
       start_period: 30s
     labels:
       - traefik.enable=true
-      - traefik.http.routers.emush-eternaltwin.rule=Host(`eternaltwin.localhost`)
+      - traefik.http.routers.emush-eternaltwin.rule=Host(`eternaltwin.${DOMAIN}`)
       - traefik.http.routers.emush-eternaltwin.entrypoints=web
       - traefik.http.services.emush-eternaltwin.loadbalancer.server.port=50320
 

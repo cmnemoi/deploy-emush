@@ -27,6 +27,28 @@ ensure_env_files() {
     fi
 }
 
+prompt_for_domain() {
+	# Ask user for domain and persist to .env
+	# Defaults to existing value or "emush.localhost" if missing
+	local current
+	current="$(read_env_var DOMAIN)"
+	if [ -z "${current:-}" ]; then
+		current="emush.localhost"
+	fi
+	printf "%s" "Enter domain name for this deployment [${current}]: "
+	read -r input || input=""
+	# Use default when user presses Enter
+	input="${input:-$current}"
+	# Normalize: strip protocol and trailing slash
+	input="${input#http://}"
+	input="${input#https://}"
+	input="${input%/}"
+	if [ "${input}" != "${current}" ]; then
+		log_info "Updating DOMAIN to ${input}"
+	fi
+	upsert_env_var DOMAIN "${input}"
+}
+
 read_env_var() {
     # Usage: read_env_var KEY -> prints value or empty
     local key="$1"
@@ -178,6 +200,22 @@ ensure_oauth_secret_and_sync() {
     fi
 }
 
+sync_etwin_domain_in_toml() {
+	# Sync domain-dependent URIs in eternaltwin.local.toml
+	local domain uri oauth_cb
+	domain="$(read_env_var DOMAIN)"
+	if [ -z "${domain:-}" ]; then
+		domain="emush.localhost"
+	fi
+	uri="http://${domain}/"
+	oauth_cb="http://api.${domain}/oauth/callback"
+	if [ -f eternaltwin.local.toml ]; then
+		# Update only within the [seed.app.emush_production] section
+		sed -i -E '/^\[seed.app.emush_production\]/,/^\[/{s|^uri = ".*"|uri = "'"${uri}"'"|}' eternaltwin.local.toml || true
+		sed -i -E '/^\[seed.app.emush_production\]/,/^\[/{s|^oauth_callback = ".*"|oauth_callback = "'"${oauth_cb}"'"|}' eternaltwin.local.toml || true
+	fi
+}
+
 restrict_sensitive_permissions() {
     chmod 600 .env || true
     chmod 600 eternaltwin.local.toml || true
@@ -198,18 +236,26 @@ setup_env_variables() {
     commit_hash="$(get_short_commit_hash)"
 
     ensure_env_files
+	prompt_for_domain
     update_release_metadata "${commit_hash}"
     ensure_app_secret
     ensure_jwt_passphrase
     ensure_db_password_and_sync
     ensure_etwin_admin_password_and_sync
     ensure_oauth_secret_and_sync
+	sync_etwin_domain_in_toml
     restrict_sensitive_permissions
     log_ok "Environment variables set"
 }
 
 launch_app() {
-    APP_URL=$(grep -oP 'VITE_APP_URL="\K[^"]+' .env)
+	# Compute APP_URL from DOMAIN set in .env
+	local domain
+	domain="$(read_env_var DOMAIN)"
+	if [ -z "${domain:-}" ]; then
+		domain="emush.localhost"
+	fi
+	APP_URL="http://${domain}/"
     echo -e "${YELLOW}Launching app...${NC}"
     docker compose build
     docker compose run --rm emush-api php bin/console lexik:jwt:generate-keypair --no-interaction --overwrite
