@@ -8,18 +8,8 @@ services:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
-      - --entrypoints.websecure.address=:443
-      # Redirection HTTP -> HTTPS
-      - --entrypoints.web.http.redirections.entrypoint.to=websecure
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
-      # ACME / Let's Encrypt
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
-      - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
-      - --certificatesresolvers.letsencrypt.acme.email=emush@${DOMAIN}
-      - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
     ports:
       - 80:80
-      - 443:443
     networks:
       - emush-network
     restart: unless-stopped
@@ -31,7 +21,6 @@ services:
       - traefik.enable=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./letsencrypt:/letsencrypt
 
   emush-web:
     container_name: emush-web
@@ -48,8 +37,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.emush-api.rule=Host(`api.emush.${DOMAIN}`)
-      - traefik.http.routers.emush-api.entrypoints=websecure
-      - traefik.http.routers.emush-api.tls.certresolver=letsencrypt
+      - traefik.http.routers.emush-api.entrypoints=web
       - traefik.http.services.emush-api.loadbalancer.server.port=80
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost/health || exit 1"]
@@ -73,8 +61,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.emush-app.rule=Host(`emush.${DOMAIN}`)
-      - traefik.http.routers.emush-app.entrypoints=websecure
-      - traefik.http.routers.emush-app.tls.certresolver=letsencrypt
+      - traefik.http.routers.emush-app.entrypoints=web
       - traefik.http.services.emush-app.loadbalancer.server.port=5173
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/health"]
@@ -122,7 +109,7 @@ services:
       POSTGRES_MULTIPLE_DATABASES: eternaltwin.prod
     volumes:
       - emush-database-data:/var/lib/postgresql/data
-      - ./database-init.sh:/docker-entrypoint-initdb.d/database-initdb.sh
+      - ./database-init.sh:/docker-entrypoint-initdb.d/database-init.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U emush -d emush"]
       interval: 30s
@@ -134,7 +121,7 @@ services:
     container_name: emush-eternaltwin
     build:
       context: .
-    dockerfile: Dockerfile.eternaltwin
+      dockerfile: Dockerfile.eternaltwin
     depends_on:
       - emush-database
     networks:
@@ -151,8 +138,7 @@ services:
     labels:
       - traefik.enable=true
       - traefik.http.routers.emush-eternaltwin.rule=Host(`eternaltwin.${DOMAIN}`)
-      - traefik.http.routers.emush-eternaltwin.entrypoints=websecure
-      - traefik.http.routers.emush-eternaltwin.tls.certresolver=letsencrypt
+      - traefik.http.routers.emush-eternaltwin.entrypoints=web
       - traefik.http.services.emush-eternaltwin.loadbalancer.server.port=50320
 
 volumes:
