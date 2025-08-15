@@ -140,8 +140,6 @@ services:
     networks:
       - emush-network
     restart: unless-stopped
-    volumes:
-      - ./eternaltwin.local.toml:/eternaltwin.toml:ro
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost:50320/ || exit 1"]
       interval: 30s
@@ -154,6 +152,9 @@ services:
       - traefik.http.routers.emush-eternaltwin.entrypoints=websecure
       - traefik.http.routers.emush-eternaltwin.tls.certresolver=letsencrypt
       - traefik.http.services.emush-eternaltwin.loadbalancer.server.port=50320
+    args:
+      - --uid=${UID}
+      - --gid=${GID}
 
 volumes:
   emush-database-data:
