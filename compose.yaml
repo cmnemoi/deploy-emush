@@ -135,6 +135,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.eternaltwin
+      args:
+        - --uid=${UID}
+        - --gid=${GID}
     depends_on:
       - emush-database
     networks:
@@ -152,9 +155,6 @@ services:
       - traefik.http.routers.emush-eternaltwin.entrypoints=websecure
       - traefik.http.routers.emush-eternaltwin.tls.certresolver=letsencrypt
       - traefik.http.services.emush-eternaltwin.loadbalancer.server.port=50320
-    args:
-      - --uid=${UID}
-      - --gid=${GID}
 
 volumes:
   emush-database-data:
