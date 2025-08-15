@@ -1,8 +1,5 @@
 FROM node:lts-slim
 
-ARG UID=$UID
-ARG GID=$GID
-
 WORKDIR /www
 
 RUN apt-get update && apt-get install -y curl
@@ -12,10 +9,6 @@ COPY eternaltwin.local.toml ./eternaltwin.toml
 
 RUN yarn install --production=false
 
-RUN groupadd -g $GID eternaltwin && \
-    usermod -u $UID -g $GID eternaltwin && \
-    chown -R eternaltwin:eternaltwin /www
-
-USER eternaltwin
+USER node
 
 CMD ["yarn", "eternaltwin", "start"]

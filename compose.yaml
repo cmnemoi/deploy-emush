@@ -135,9 +135,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.eternaltwin
-      args:
-        - --uid=${UID:-1000}
-        - --gid=${GID:-${UID}}
     depends_on:
       - emush-database
     networks:
