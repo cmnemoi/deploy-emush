@@ -12,8 +12,8 @@ COPY eternaltwin.local.toml ./eternaltwin.toml
 
 RUN yarn install --production=false
 
-RUN groupadd -g $GID eternaltwin && \
-    usermod -u $UID -g $GID eternaltwin && \
+RUN groupadd -g ${GID} eternaltwin && \
+    usermod -u ${UID} -g ${GID} eternaltwin && \
     chown -R eternaltwin:eternaltwin /www
 
 USER eternaltwin
