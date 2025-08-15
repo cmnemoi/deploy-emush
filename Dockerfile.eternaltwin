@@ -12,9 +12,17 @@ COPY eternaltwin.local.toml ./eternaltwin.toml
 
 RUN yarn install --production=false
 
-RUN groupadd -g ${GID} eternaltwin && \
-    usermod -u ${UID} -g ${GID} eternaltwin && \
-    chown -R eternaltwin:eternaltwin /www
+# Create group and user with proper error handling for existing GIDs
+RUN if getent group ${GID} > /dev/null 2>&1; then \
+        # Group with this GID exists, use it and add eternaltwin user to it \
+        usermod -u ${UID} -g ${GID} eternaltwin || \
+        (useradd -u ${UID} -g ${GID} eternaltwin && chown -R eternaltwin:eternaltwin /www); \
+    else \
+        # Group doesn't exist, create it normally \
+        groupadd -g ${GID} eternaltwin && \
+        usermod -u ${UID} -g ${GID} eternaltwin && \
+        chown -R eternaltwin:eternaltwin /www; \
+    fi
 
 USER eternaltwin
 
