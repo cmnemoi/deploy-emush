@@ -31,7 +31,7 @@ services:
       - traefik.enable=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./letsencrypt:/letsencrypt
+      - letsencrypt-data:/letsencrypt
 
   emush-web:
     container_name: emush-web
@@ -112,8 +112,6 @@ services:
       dockerfile: Dockerfile.db
     networks:
       - emush-network
-    ports:
-      - 5432:5432
     restart: unless-stopped
     environment:
       POSTGRES_USER: emush
@@ -162,6 +160,8 @@ volumes:
   api-public:
     driver: local
   jwt-keys:
+    driver: local
+  letsencrypt-data:
     driver: local
 
 networks:
