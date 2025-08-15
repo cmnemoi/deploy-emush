@@ -23,7 +23,7 @@ git clone --recurse-submodules https://github.com/cmnemoi/deploy-emush.git www &
 
 eMush supports two deployment channels:
 
-- **Stable** (default): Uses the `master` branch : it's the same version deployed on [Eternaltwin eMush](https://emush.eternaltwin.com).
+- **Stable** (default): Uses the `master` branch : it's the same version deployed on [Eternaltwin eMush](https://emush.eternaltwin.org).
 - **Beta**: Uses the `develop` branch with the latest, non-published, features.
 
 You can switch between channels using the following commands:
