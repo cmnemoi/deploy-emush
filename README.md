@@ -7,7 +7,7 @@ An autonomous repository to deploy / self-host [eMush](https://gitlab.com/eterna
 - A GNU/Linux server. This installation has been tested on Pop!_OS 22.04 and Ubuntu 25.04.
 - [Docker](https://docs.docker.com/get-docker/), Docker Compose and Make installed.
 - A domain name pointing to the server, and the following associated subdomains : `emush.yourdomain.com`, `api.emush.yourdomain.com`, `eternaltwin.yourdomain.com`.
-[How to associate a Namecheap domain name to a server (in french)](https://claude.ai/share/5c355b84-101d-4031-a9f2-4693577321bf).
+[How to associate a Namecheap domain name to a server (in french)](https://claude.ai/share/4f787611-6d57-40b6-8624-cf08310f1c0c).
 
 I highly recommend you also add basic security to your server.
 
