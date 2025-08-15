@@ -16,8 +16,24 @@ The bare minimum would be to **use a non-root user to deploy eMush**, and to ins
 
 ```
 git clone --recurse-submodules https://github.com/cmnemoi/deploy-emush.git www && cd www
-make deploy
+./deploy.sh # or make deploy
 ```
+
+## Deployment Channels
+
+eMush supports two deployment channels:
+
+- **Stable** (default): Uses the `master` branch : it's the same version deployed on [Eternaltwin eMush](https://emush.eternaltwin.com).
+- **Beta**: Uses the `develop` branch with the latest, non-published, features.
+
+You can switch between channels using the following commands:
+
+```bash
+./deploy.sh --beta # or make deploy-beta
+./deploy.sh --stable # or make deploy-stable, make deploy or ./deploy.sh (default)
+```
+
+**Note**: The beta channel may be unstable. Use it at your own risk.
 
 # License
 

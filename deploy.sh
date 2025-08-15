@@ -12,6 +12,40 @@ log_info() { echo -e "${YELLOW}$1${NC}"; }
 log_warn() { echo -e "${YELLOW}$1${NC}"; }
 log_ok() { echo -e "${GREEN}$1${NC}"; }
 
+# Parse command line arguments
+DEPLOYMENT_CHANNEL="stable"
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        --beta)
+            DEPLOYMENT_CHANNEL="beta"
+            shift
+            ;;
+        --stable)
+            DEPLOYMENT_CHANNEL="stable"
+            shift
+            ;;
+        --help|-h)
+            echo "Usage: $0 [OPTIONS]"
+            echo ""
+            echo "Options:"
+            echo "  --beta     Deploy beta version (develop branch)"
+            echo "  --stable   Deploy stable version (master branch) [default]"
+            echo "  --help, -h Show this help message"
+            echo ""
+            echo "Examples:"
+            echo "  $0              # Deploy stable (default)"
+            echo "  $0 --beta       # Deploy beta version"
+            echo "  $0 --stable     # Deploy stable version"
+            exit 0
+            ;;
+        *)
+            echo "Unknown option: $1"
+            echo "Use --help for usage information"
+            exit 1
+            ;;
+    esac
+done
+
 get_short_commit_hash() {
     (cd emush && git rev-parse --short HEAD)
 }
@@ -76,7 +110,8 @@ upsert_env_var() {
 update_release_metadata() {
     local commit_hash="$1"
     local release_channel
-    release_channel="$(hostname)"
+    release_channel="$(hostname)-${DEPLOYMENT_CHANNEL}"
+    
     sed -i -E "s|^VITE_APP_API_RELEASE_COMMIT=.*|VITE_APP_API_RELEASE_COMMIT=\"${commit_hash}\"|" .env
     sed -i -E "s|^VITE_APP_API_RELEASE_CHANNEL=.*|VITE_APP_API_RELEASE_CHANNEL=\"${release_channel}\"|" .env
 }
@@ -265,15 +300,28 @@ restrict_sensitive_permissions() {
 }
 
 pull_latest_code() {
-    log_info "Pulling latest code..."
+    log_info "Pulling latest code for channel: ${DEPLOYMENT_CHANNEL}..."
     git fetch origin
     git pull origin main
+    
     cd emush
     git fetch origin
-    git checkout develop
-    git pull origin develop
+    
+    case "${DEPLOYMENT_CHANNEL}" in
+        "beta"|"develop")
+            log_info "Switching to beta (develop branch)"
+            git checkout develop
+            git pull origin develop
+            ;;
+        "stable"|"master"|*)
+            log_info "Switching to stable (master branch)"
+            git checkout master
+            git pull origin master
+            ;;
+    esac
+    
     cd ..
-    log_ok "Code pulled"
+    log_ok "Code pulled for ${DEPLOYMENT_CHANNEL} channel"
 }
 
 setup_env_variables() {
