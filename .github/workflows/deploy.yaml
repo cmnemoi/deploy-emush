@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   schedule:
-    - cron: '0 3 * * *' # Toutes les jours à 3AM UTC
+    - cron: '0 3 * * *' # Tous les jours à 3AM UTC
   workflow_dispatch:
 
 jobs:
@@ -17,16 +17,7 @@ jobs:
 
       - name: Check for eMush updates
         id: check
-        run: |
-            cd emush
-            git fetch origin
-            CURRENT=$(git rev-parse HEAD)
-            REMOTE=$(git rev-parse origin/develop)
-            if [ "$CURRENT" != "$REMOTE" ]; then
-              echo "updated=true" >> $GITHUB_OUTPUT
-            else
-              echo "updated=false" >> $GITHUB_OUTPUT
-            fi
+        run: ./.github/scripts/check-for-emush-updates.sh
 
       - name: Deploy eMush
         if: steps.check.outputs.updated == 'true'
