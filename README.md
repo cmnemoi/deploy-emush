@@ -1,5 +1,7 @@
 # Deploy eMush
 
+[![Deploy](https://github.com/cmnemoi/deploy-emush/actions/workflows/deploy.yaml/badge.svg)](https://github.com/cmnemoi/deploy-emush/actions/workflows/deploy.yaml)
+
 An autonomous repository to deploy / self-host [eMush](https://gitlab.com/eternaltwin/mush/mush).
 
 # Prerequisites
@@ -15,10 +17,25 @@ The bare minimum would be to **use a non-root user to deploy eMush**, and to ins
 
 # Usage
 
+## Manual
+
 ```
 git clone --recurse-submodules https://github.com/cmnemoi/deploy-emush.git www && cd www
 make deploy
 ```
+
+## Via GitHub Actions (semi-automatic)
+
+- Create a fork of this repository.
+- Setup the following in your GitHub repository:
+  - `HOST`: The hostname or IP address of your server.
+  - `USERNAME`: The SSH username to connect to your server.
+  - `SSH_KEY`: The private SSH key to authenticate with your server.
+  - `PORT`: The SSH port (usually 22).
+in https://github.com/<your_username>/deploy-emush/settings/secrets/actions
+- Go to [Actions](https://github.com/<your_username>/deploy-emush/actionsworkflows/deploy.yaml) tab and click on "Run workflow".
+
+The [workflow](https://github.com/cmnemoi/deploy-emush/blob/main/.github/workflows/deploy.yaml) of this repository is also programmed to deploy beta updates of eMush every 5 minutes, but you can edit it to your convenance.
 
 ## Deployment Channels
 
