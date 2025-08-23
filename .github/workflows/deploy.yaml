@@ -18,15 +18,15 @@ jobs:
       - name: Check for eMush updates
         id: check
         run: |
-          git submodule foreach git fetch origin
-          CURRENT=$(git rev-parse HEAD)
-          REMOTE=$(git rev-parse origin/develop)
-          
-          if [ "$CURRENT" != "$REMOTE" ]; then
-            echo "updated=true" >> $GITHUB_OUTPUT
-          else
-            echo "updated=false" >> $GITHUB_OUTPUT
-          fi
+            cd emush
+            git fetch origin
+            CURRENT=$(git rev-parse HEAD)
+            REMOTE=$(git rev-parse origin/develop)
+            if [ "$CURRENT" != "$REMOTE" ]; then
+              echo "updated=true" >> $GITHUB_OUTPUT
+            else
+              echo "updated=false" >> $GITHUB_OUTPUT
+            fi
 
       - name: Deploy eMush
         if: steps.check.outputs.updated == 'true'
