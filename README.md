@@ -33,7 +33,7 @@ make deploy
   - `SSH_KEY`: The private SSH key to authenticate with your server.
   - `PORT`: The SSH port (usually 22).
 in https://github.com/<your_username>/deploy-emush/settings/secrets/actions
-- Go to [Actions](https://github.com/<your_username>/deploy-emush/actions/workflows/deploy.yaml) tab and click on "Run workflow".
+- Go to Actions tab (https://github.com/<your_username>/deploy-emush/actions/workflows/deploy.yaml) tab and click on "Run workflow".
 
 The [workflow](https://github.com/cmnemoi/deploy-emush/blob/main/.github/workflows/deploy.yaml) of this repository is also programmed to deploy beta updates of eMush every 5 minutes, but you can edit it to your convenance.
 
