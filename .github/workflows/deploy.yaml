@@ -1,0 +1,39 @@
+name: Deploy
+
+on:
+  schedule:
+    - cron: '*/5 * * * *' # Toutes les 5 minutes
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Check for submodule updates
+        id: check
+        run: |
+          cd /www/emush
+          git submodule foreach git fetch origin
+          CURRENT=$(git rev-parse HEAD)
+          REMOTE=$(git rev-parse origin/develop)
+          
+          if [ "$CURRENT" != "$REMOTE" ]; then
+            echo "updated=true" >> $GITHUB_OUTPUT
+          else
+            echo "updated=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Deploy if updated
+        if: steps.check.outputs.updated == 'true'
+        uses: appleboy/ssh-action@v1.2.2
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.SSH_KEY }}
+          script: cd /www && make deploy-beta
