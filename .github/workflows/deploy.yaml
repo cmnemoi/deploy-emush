@@ -2,7 +2,7 @@ name: Deploy
 
 on:
   schedule:
-    - cron: '*/5 * * * *' # Toutes les 5 minutes
+    - cron: '0 3 * * *' # Toutes les jours à 3AM UTC
   workflow_dispatch:
 
 jobs:
