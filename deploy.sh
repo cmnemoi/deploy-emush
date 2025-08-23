@@ -360,9 +360,13 @@ launch_app() {
     ensure_admin_id_from_database
     docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
     echo -e "${GREEN}App launched at ${APP_URL}${NC}"
-    log_info "You can connect with admin account:"
-    log_info "  - username: admin"
-    log_info "  - password: ${admin_pass} (please change it)"
+    
+    # Only display admin credentials if not in CI environment
+    if [ -z "${CI:-}" ]; then
+        log_info "You can connect with admin account:"
+        log_info "  - username: admin"
+        log_info "  - password: ${admin_pass} (please change it)"
+    fi
 }
 
 main() {
