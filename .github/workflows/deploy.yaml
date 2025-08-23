@@ -15,10 +15,9 @@ jobs:
           submodules: recursive
           fetch-depth: 0
 
-      - name: Check for submodule updates
+      - name: Check for eMush updates
         id: check
         run: |
-          cd /www/emush
           git submodule foreach git fetch origin
           CURRENT=$(git rev-parse HEAD)
           REMOTE=$(git rev-parse origin/develop)
@@ -29,7 +28,7 @@ jobs:
             echo "updated=false" >> $GITHUB_OUTPUT
           fi
 
-      - name: Deploy if updated
+      - name: Deploy eMush
         if: steps.check.outputs.updated == 'true'
         uses: appleboy/ssh-action@v1.2.2
         with:
