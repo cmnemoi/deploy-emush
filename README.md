@@ -27,13 +27,12 @@ make deploy
 ## Via GitHub Actions (semi-automatic)
 
 - Create a fork of this repository.
-- Setup the following in your GitHub repository:
+- Setup the following secrets in https://github.com/your_username/deploy-emush/settings/secrets/actions
   - `HOST`: The hostname or IP address of your server.
   - `USERNAME`: The SSH username to connect to your server.
   - `SSH_KEY`: The private SSH key to authenticate with your server.
-  - `PORT`: The SSH port (usually 22).
-in https://github.com/<your_username>/deploy-emush/settings/secrets/actions
-- Go to Actions tab (https://github.com/<your_username>/deploy-emush/actions/workflows/deploy.yaml) tab and click on "Run workflow".
+  - `PORT`: The SSH port (usually 22).<
+- Go to Actions tab (https://github.com/your_username/deploy-emush/actions/workflows/deploy.yaml) tab and click on "Run workflow".
 
 The [workflow](https://github.com/cmnemoi/deploy-emush/blob/main/.github/workflows/deploy.yaml) of this repository is also programmed to deploy beta updates of eMush every 5 minutes, but you can edit it to your convenance.
 
