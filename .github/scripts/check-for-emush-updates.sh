@@ -5,7 +5,6 @@ set -u
 
 cd emush
 git checkout develop
-git fetch origin
 CURRENT=$(git rev-parse HEAD)
 REMOTE=$(git rev-parse origin/develop)
 echo "Current commit: $CURRENT"
