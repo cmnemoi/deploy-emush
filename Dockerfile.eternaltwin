@@ -15,7 +15,6 @@ RUN groupmod -o -g ${GID} node \
 
 RUN corepack enable
 
-# Copier ce qui suffit pour le yarn install (meilleure cache layer)
 COPY --chown=node:node emush/Eternaltwin/package.json emush/Eternaltwin/yarn.lock ./
 COPY --chown=node:node eternaltwin.local.toml ./eternaltwin.toml
 
@@ -25,8 +24,6 @@ ENV HOME=/home/node \
     YARN_ENABLE_GLOBAL_CACHE=0 \
     CI=1
 
-RUN corepack prepare yarn@4.9.3 --activate \
- && yarn -v \
- && yarn install --immutable
+RUN corepack prepare yarn@4.9.3 --activate && yarn install --immutable
 
 CMD ["yarn", "eternaltwin", "start"]
