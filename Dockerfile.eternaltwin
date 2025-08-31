@@ -1,19 +1,30 @@
 FROM node:lts-slim
 
-ARG UID=$UID
-ARG GID=$GID
+ARG UID=1000
+ARG GID=1000
+
+RUN apt-get update && apt-get install -y --no-install-recommends curl \
+  && rm -rf /var/lib/apt/lists/*
+
+RUN groupmod -o -g ${GID} node \
+ && usermod  -o -u ${UID} -g ${GID} node \
+ && mkdir -p /home/node /www \
+ && chown -R node:node /home/node /www
 
 WORKDIR /www
 
-RUN apt-get update && apt-get install -y curl
+ENV HOME=/home/node \
+    COREPACK_HOME=/home/node/.cache/corepack \
+    YARN_ENABLE_GLOBAL_CACHE=0 \
+    CI=1
 
-COPY emush/Eternaltwin/package.json emush/Eternaltwin/yarn.lock ./
-COPY eternaltwin.local.toml ./eternaltwin.toml
-
-RUN corepack enable && yarn install --immutable
-
-RUN usermod -u ${UID} -g ${GID} node && chown -R node:node /www
+COPY --chown=node:node emush/Eternaltwin/package.json emush/Eternaltwin/yarn.lock ./
+COPY --chown=node:node eternaltwin.local.toml ./eternaltwin.toml
 
 USER node
 
+# Préparer Yarn via Corepack sans interaction puis installer
+RUN corepack enable && yarn install --immutable
+
+# Lancement
 CMD ["yarn", "eternaltwin", "start"]
