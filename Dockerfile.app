@@ -12,7 +12,7 @@ WORKDIR /app
 COPY emush/App/ ./
 
 # Install dependencies with frozen lockfile for reproducible builds
-RUN yarn install --frozen-lockfile --immutable
+RUN corepack enable && yarn install --frozen-lockfile --immutable
 
 # Copy .env file for build-time environment variables
 COPY .env ./
