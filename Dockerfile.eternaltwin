@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y curl
 COPY emush/Eternaltwin/package.json ./
 COPY eternaltwin.local.toml ./eternaltwin.toml
 
-RUN corepack enable && yarn install --immutable
+RUN corepack enable && yarn install
 
 RUN usermod -u ${UID} -g ${GID} node && chown -R node:node /www
 
