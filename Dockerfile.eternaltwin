@@ -7,10 +7,9 @@ WORKDIR /www
 
 RUN apt-get update && apt-get install -y curl
 
-COPY emush/Eternaltwin/package.json ./
-COPY eternaltwin.local.toml ./eternaltwin.toml
+COPY emush/Eternaltwin/ ./
 
-RUN corepack enable && yarn install
+RUN corepack enable && yarn install --immutable
 
 RUN usermod -u ${UID} -g ${GID} node && chown -R node:node /www
 
