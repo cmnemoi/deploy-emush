@@ -147,6 +147,57 @@ generate_strong_alnum_secret() {
     LC_ALL=C tr -dc 'A-Za-z0-9' </dev/urandom | head -c 40
 }
 
+generate_vapid_keys() {
+    # Generate VAPID key pair for Web Push notifications using a simpler approach
+    # In CI: writes keys to temporary files, returns file paths
+    # Outside CI: returns PRIVATE_KEY:PUBLIC_KEY (base64url encoded) via stdout
+    local temp_key private_b64 public_b64
+    
+    # Create temporary file
+    temp_key=$(mktemp)
+    
+    # Generate EC key pair using prime256v1 (P-256) curve
+    if ! openssl ecparam -genkey -name prime256v1 -noout -out "$temp_key" 2>/dev/null; then
+        rm -f "$temp_key"
+        if [ -z "${CI:-}" ]; then
+            echo "ERROR: Failed to generate EC key pair" >&2
+        fi
+        return 1
+    fi
+    
+    # Extract private key in raw format and convert to base64url
+    private_b64=$(openssl ec -in "$temp_key" -text -noout 2>/dev/null | \
+        awk '/priv:/{flag=1; next} /pub:/{flag=0} flag && /[0-9a-f:]+/{gsub(/[: \n]/, ""); print}' | \
+        tr -d '\n' | xxd -r -p | base64 -w 0 | tr '+/' '-_' | tr -d '=')
+    
+    # Extract public key in raw format (uncompressed, without 0x04 prefix) and convert to base64url
+    public_b64=$(openssl ec -in "$temp_key" -pubout -outform DER 2>/dev/null | \
+        tail -c 65 | tail -c +2 | base64 -w 0 | tr '+/' '-_' | tr -d '=')
+    
+    # Clean up temp file
+    rm -f "$temp_key"
+    
+    # Validate that we got valid keys
+    if [ -z "$private_b64" ] || [ -z "$public_b64" ]; then
+        if [ -z "${CI:-}" ]; then
+            echo "ERROR: Failed to extract keys" >&2
+        fi
+        return 1
+    fi
+    
+    # In CI environments, use temporary files to avoid logging keys
+    if [ -n "${CI:-}" ]; then
+        local temp_private temp_public
+        temp_private=$(mktemp)
+        temp_public=$(mktemp)
+        echo "$private_b64" > "$temp_private"
+        echo "$public_b64" > "$temp_public"
+        echo "$temp_private:$temp_public"
+    else
+        echo "${private_b64}:${public_b64}"
+    fi
+}
+
 db_volume_initialized() {
     # Returns 0 if the Postgres data volume folder is non-empty, else 1
     local volume_path
@@ -236,6 +287,46 @@ ensure_oauth_secret_and_sync() {
     else
         sync_etwin_secret_in_toml "${current}"
         log_warn "OAUTH_SECRET_ID already set, synced to eternaltwin.local.toml"
+    fi
+}
+
+ensure_vapid_keys() {
+    local current_public current_private current_vite_public
+    current_public="$(read_env_var VAPID_PUBLIC_KEY)"
+    current_private="$(read_env_var VAPID_PRIVATE_KEY)"
+    current_vite_public="$(read_env_var VITE_VAPID_PUBLIC_KEY)"
+    
+    if [ -z "${current_public:-}" ] || [ "${current_public}" = "__GENERATED_ON_FIRST_DEPLOY__" ] || \
+       [ -z "${current_private:-}" ] || [ "${current_private}" = "__GENERATED_ON_FIRST_DEPLOY__" ] || \
+       [ -z "${current_vite_public:-}" ] || [ "${current_vite_public}" = "__GENERATED_ON_FIRST_DEPLOY__" ]; then
+        
+        log_info "Generating VAPID keys..."
+        local vapid_keys private_key public_key
+        vapid_keys="$(generate_vapid_keys)"
+        
+        # Handle different output formats based on CI environment
+        if [ -n "${CI:-}" ]; then
+            # In CI: vapid_keys contains "temp_private_file:temp_public_file"
+            local temp_private_file temp_public_file
+            temp_private_file="${vapid_keys%:*}"
+            temp_public_file="${vapid_keys#*:}"
+            private_key="$(cat "$temp_private_file")"
+            public_key="$(cat "$temp_public_file")"
+            # Clean up temporary files
+            rm -f "$temp_private_file" "$temp_public_file"
+        else
+            # Outside CI: vapid_keys contains "private_key:public_key"
+            private_key="${vapid_keys%:*}"
+            public_key="${vapid_keys#*:}"
+        fi
+        
+        upsert_env_var VAPID_PRIVATE_KEY "${private_key}"
+        upsert_env_var VAPID_PUBLIC_KEY "${public_key}"
+        upsert_env_var VITE_VAPID_PUBLIC_KEY "${public_key}"
+        
+        log_ok "Generated VAPID keys for Web Push notifications"
+    else
+        log_warn "VAPID keys already set, keeping existing values"
     fi
 }
 
@@ -336,6 +427,7 @@ setup_env_variables() {
     ensure_db_password_and_sync
     ensure_etwin_admin_password_and_sync
     ensure_oauth_secret_and_sync
+    ensure_vapid_keys
 	sync_etwin_domain_in_toml
     restrict_sensitive_permissions
     log_ok "Environment variables set"
