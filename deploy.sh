@@ -417,10 +417,13 @@ pull_latest_code() {
 
 setup_env_variables() {
     local commit_hash
+    local domain
     commit_hash="$(get_short_commit_hash)"
 
     ensure_env_files
 	prompt_for_domain
+    domain="$(read_env_var DOMAIN)"
+    upsert_env_var VITE_ETERNALTWIN_URL "https://eternaltwin.${domain}/"
     update_release_metadata "${commit_hash}"
     ensure_app_secret
     ensure_jwt_passphrase
