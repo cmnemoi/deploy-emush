@@ -148,51 +148,71 @@ generate_strong_alnum_secret() {
 }
 
 generate_vapid_keys() {
-    # Generate VAPID key pair for Web Push notifications using a simpler approach
-    # In CI: writes keys to temporary files, returns file paths
-    # Outside CI: returns PRIVATE_KEY:PUBLIC_KEY (base64url encoded) via stdout
+    # Génère une paire de clés VAPID (P-256) pour Web Push.
+    # Sortie :
+    #  - En CI: chemins vers deux fichiers temporaires "PRIVATE:PUBLIC" (base64url)
+    #  - Hors CI: "PRIVATE:PUBLIC" (base64url) sur stdout
+    # Hypothèse: openssl, xxd, base64, awk, tr, tail sont disponibles.
+
     local temp_key private_b64 public_b64
-    
-    # Create temporary file
-    temp_key=$(mktemp)
-    
-    # Generate EC key pair using prime256v1 (P-256) curve
+
+    # Fichier temporaire pour la clé EC (P-256)
+    temp_key=$(mktemp) || { echo "ERROR: mktemp failed" >&2; return 1; }
+
+    # 1) Génère la clé privée P-256
     if ! openssl ecparam -genkey -name prime256v1 -noout -out "$temp_key" 2>/dev/null; then
         rm -f "$temp_key"
-        if [ -z "${CI:-}" ]; then
-            echo "ERROR: Failed to generate EC key pair" >&2
-        fi
+        [ -z "${CI:-}" ] && echo "ERROR: Failed to generate EC key pair" >&2
         return 1
     fi
-    
-    # Extract private key in raw format and convert to base64url
-    private_b64=$(openssl ec -in "$temp_key" -text -noout 2>/dev/null | \
-        awk '/priv:/{flag=1; next} /pub:/{flag=0} flag && /[0-9a-f:]+/{gsub(/[: \n]/, ""); print}' | \
-        tr -d '\n' | xxd -r -p | base64 -w 0 | tr '+/' '-_' | tr -d '=')
-    
-    # Extract public key in raw format (uncompressed, without 0x04 prefix) and convert to base64url
-    public_b64=$(openssl ec -in "$temp_key" -pubout -outform DER 2>/dev/null | \
-        tail -c 65 | tail -c +2 | base64 -w 0 | tr '+/' '-_' | tr -d '=')
-    
-    # Clean up temp file
+
+    # 2) Extrait d (32 octets) en base64url (clé privée VAPID)
+    #    On parse la section "priv:" (hex), on concatène, on convertit en binaire, puis base64url.
+    private_b64=$(
+        openssl ec -in "$temp_key" -text -noout 2>/dev/null |
+        awk '/priv:/{flag=1; next} /pub:/{flag=0} flag && /[0-9a-f:]+/{
+            gsub(/[: \n]/,""); printf "%s",$0
+        }' |
+        xxd -r -p |
+        base64 -w 0 | tr '+/' '-_' | tr -d '='
+    )
+
+    # 3) Extrait la clé publique en format RAW UNCOMPRESSED (65 octets = 0x04 || X(32) || Y(32))
+    #    -pubout -outform DER produit une SPKI DER, les 65 derniers octets sont le point EC uncompressed.
+    #    CONTRAIREMENT à ton script initial, on NE retire PAS le premier octet 0x04.
+    public_b64=$(
+        openssl ec -in "$temp_key" -pubout -outform DER 2>/dev/null |
+        tail -c 65 |
+        base64 -w 0 | tr '+/' '-_' | tr -d '='
+    )
+
+    # Nettoyage du fichier temporaire
     rm -f "$temp_key"
-    
-    # Validate that we got valid keys
+
+    # 4) Validation minimale
     if [ -z "$private_b64" ] || [ -z "$public_b64" ]; then
-        if [ -z "${CI:-}" ]; then
-            echo "ERROR: Failed to extract keys" >&2
-        fi
+        [ -z "${CI:-}" ] && echo "ERROR: Failed to extract keys" >&2
         return 1
     fi
-    
-    # In CI environments, use temporary files to avoid logging keys
+
+    # Vérif rapide: premier octet public doit être 0x04 (optionnel mais utile)
+    # (Ne casse pas la sortie; on loggue en stderr si incohérent)
+    if command -v base64 >/dev/null 2>&1 && command -v xxd >/dev/null 2>&1; then
+        local first_byte
+        first_byte=$(printf '%s' "$public_b64" | tr '-_' '+/' | base64 -d 2>/dev/null | xxd -p -c 65 | head -c 2)
+        if [ "$first_byte" != "04" ]; then
+            [ -z "${CI:-}" ] && echo "WARN: public key first byte is not 0x04" >&2
+        fi
+    fi
+
+    # 5) Sortie
     if [ -n "${CI:-}" ]; then
         local temp_private temp_public
-        temp_private=$(mktemp)
-        temp_public=$(mktemp)
-        echo "$private_b64" > "$temp_private"
-        echo "$public_b64" > "$temp_public"
-        echo "$temp_private:$temp_public"
+        temp_private=$(mktemp) || { echo "ERROR: mktemp failed" >&2; return 1; }
+        temp_public=$(mktemp) || { echo "ERROR: mktemp failed" >&2; return 1; }
+        printf '%s\n' "$private_b64" > "$temp_private"
+        printf '%s\n' "$public_b64" > "$temp_public"
+        echo "${temp_private}:${temp_public}"
     else
         echo "${private_b64}:${public_b64}"
     fi
