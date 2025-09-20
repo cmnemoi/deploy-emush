@@ -14,9 +14,11 @@ services:
     volumes:
       - api-public:/var/www/html/public:ro
     labels:
-      - coolify.enabled=true
-      - coolify.port=80
-      - coolify.domain=api.emush.${DOMAIN}
+      - traefik.enable=true
+      - traefik.http.routers.emush-api.rule=Host(`api.emush.${DOMAIN}`)
+      - traefik.http.routers.emush-api.entrypoints=websecure
+      - traefik.http.routers.emush-api.tls.certresolver=letsencrypt
+      - traefik.http.services.emush-api.loadbalancer.server.port=80
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost/health || exit 1"]
       interval: 30s
@@ -37,9 +39,11 @@ services:
     depends_on:
       - emush-web
     labels:
-      - coolify.enabled=true
-      - coolify.port=5173
-      - coolify.domain=emush.${DOMAIN}
+      - traefik.enable=true
+      - traefik.http.routers.emush-app.rule=Host(`emush.${DOMAIN}`)
+      - traefik.http.routers.emush-app.entrypoints=websecure
+      - traefik.http.routers.emush-app.tls.certresolver=letsencrypt
+      - traefik.http.services.emush-app.loadbalancer.server.port=5173
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/health"]
       interval: 30s
@@ -112,9 +116,11 @@ services:
       retries: 5
       start_period: 30s
     labels:
-      - coolify.enabled=true
-      - coolify.port=50320
-      - coolify.domain=eternaltwin.${DOMAIN}
+      - traefik.enable=true
+      - traefik.http.routers.emush-eternaltwin.rule=Host(`eternaltwin.${DOMAIN}`)
+      - traefik.http.routers.emush-eternaltwin.entrypoints=websecure
+      - traefik.http.routers.emush-eternaltwin.tls.certresolver=letsencrypt
+      - traefik.http.services.emush-eternaltwin.loadbalancer.server.port=50320
 
 volumes:
   emush-database-data:
@@ -122,6 +128,8 @@ volumes:
   api-public:
     driver: local
   jwt-keys:
+    driver: local
+  letsencrypt-data:
     driver: local
 
 networks:
