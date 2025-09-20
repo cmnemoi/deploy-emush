@@ -3,36 +3,34 @@ name: traefik
 services:
   traefik:
     image: traefik:3.5
-    container_name: traefik
-    restart: unless-stopped
     command:
       - --providers.docker=true
       - --providers.docker.exposedbydefault=false
       - --entrypoints.web.address=:80
       - --entrypoints.websecure.address=:443
+      # Redirection HTTP -> HTTPS
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
       # ACME / Let's Encrypt
       - --certificatesresolvers.letsencrypt.acme.httpchallenge=true
       - --certificatesresolvers.letsencrypt.acme.httpchallenge.entrypoint=web
       - --certificatesresolvers.letsencrypt.acme.email=traefik@cmnemoi.com
       - --certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json
-      # Redirect HTTP to HTTPS
-      - --entrypoints.web.http.middlewares=redirect-to-https
-      - --entrypoints.web.http.redirections.entrypoint.to=websecure
-      - --entrypoints.web.http.redirections.entrypoint.scheme=https
     ports:
-      - "80:80"
-      - "443:443"
+      - 80:80
+      - 443:443
+    networks:
+      - traefik-proxy
+    restart: unless-stopped
+    labels:
+      - traefik.enable=true
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - letsencrypt-data:/letsencrypt
-    networks:
-      - traefik-proxy
-    labels:
-      - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
-      - traefik.http.middlewares.redirect-to-https.redirectscheme.permanent=true
 
 volumes:
   letsencrypt-data:
+    name: letsencrypt-data
 
 networks:
   traefik-proxy:

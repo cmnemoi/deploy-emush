@@ -1,4 +1,5 @@
 name: emush
+
 services:
   emush-web:
     container_name: emush-web
@@ -7,7 +8,7 @@ services:
       dockerfile: Dockerfile.web
     networks:
       - emush-network
-      - traefik-proxy  # Ajout du réseau Traefik
+      - traefik-proxy
     restart: unless-stopped
     depends_on:
       - emush-api
@@ -15,14 +16,9 @@ services:
       - api-public:/var/www/html/public:ro
     labels:
       - traefik.enable=true
-      - traefik.docker.network=traefik-proxy
-      # Route HTTP pour ACME challenges
-      - traefik.http.routers.emush-api-http.rule=Host(`api.emush.${DOMAIN}`)
-      - traefik.http.routers.emush-api-http.entrypoints=web
-      # Route HTTPS principale  
-      - traefik.http.routers.emush-api-https.rule=Host(`api.emush.${DOMAIN}`)
-      - traefik.http.routers.emush-api-https.entrypoints=websecure
-      - traefik.http.routers.emush-api-https.tls.certresolver=letsencrypt
+      - traefik.http.routers.emush-api.rule=Host(`api.emush.${DOMAIN}`)
+      - traefik.http.routers.emush-api.entrypoints=websecure
+      - traefik.http.routers.emush-api.tls.certresolver=letsencrypt
       - traefik.http.services.emush-api.loadbalancer.server.port=80
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost/health || exit 1"]
@@ -38,7 +34,7 @@ services:
       dockerfile: Dockerfile.app
     networks:
       - emush-network
-      - traefik-proxy  # Ajout du réseau Traefik
+      - traefik-proxy
     restart: unless-stopped
     env_file:
       - .env
@@ -46,14 +42,9 @@ services:
       - emush-web
     labels:
       - traefik.enable=true
-      - traefik.docker.network=traefik-proxy
-      # Route HTTP pour ACME challenges
-      - traefik.http.routers.emush-app-http.rule=Host(`emush.${DOMAIN}`)
-      - traefik.http.routers.emush-app-http.entrypoints=web
-      # Route HTTPS principale
-      - traefik.http.routers.emush-app-https.rule=Host(`emush.${DOMAIN}`)
-      - traefik.http.routers.emush-app-https.entrypoints=websecure
-      - traefik.http.routers.emush-app-https.tls.certresolver=letsencrypt
+      - traefik.http.routers.emush-app.rule=Host(`emush.${DOMAIN}`)
+      - traefik.http.routers.emush-app.entrypoints=websecure
+      - traefik.http.routers.emush-app.tls.certresolver=letsencrypt
       - traefik.http.services.emush-app.loadbalancer.server.port=5173
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/health"]
@@ -68,7 +59,8 @@ services:
       context: .
       dockerfile: Dockerfile.api
     networks:
-      - emush-network  # Reste sur le réseau interne pour communiquer avec la DB
+      - emush-network
+      - traefik-proxy
     restart: unless-stopped
     env_file:
       - .env
@@ -90,7 +82,7 @@ services:
       context: .
       dockerfile: Dockerfile.db
     networks:
-      - emush-network  # Reste sur le réseau interne uniquement
+      - emush-network
     restart: unless-stopped
     environment:
       POSTGRES_USER: emush
@@ -129,14 +121,9 @@ services:
       start_period: 30s
     labels:
       - traefik.enable=true
-      - traefik.docker.network=traefik-proxy
-      # Route HTTP pour ACME challenges
-      - traefik.http.routers.emush-eternaltwin-http.rule=Host(`eternaltwin.${DOMAIN}`)
-      - traefik.http.routers.emush-eternaltwin-http.entrypoints=web
-      # Route HTTPS principale
-      - traefik.http.routers.emush-eternaltwin-https.rule=Host(`eternaltwin.${DOMAIN}`)
-      - traefik.http.routers.emush-eternaltwin-https.entrypoints=websecure
-      - traefik.http.routers.emush-eternaltwin-https.tls.certresolver=letsencrypt
+      - traefik.http.routers.emush-eternaltwin.rule=Host(`eternaltwin.${DOMAIN}`)
+      - traefik.http.routers.emush-eternaltwin.entrypoints=websecure
+      - traefik.http.routers.emush-eternaltwin.tls.certresolver=letsencrypt
       - traefik.http.services.emush-eternaltwin.loadbalancer.server.port=50320
 
 volumes:
@@ -150,5 +137,3 @@ volumes:
 networks:
   emush-network:
     driver: bridge
-  traefik-proxy:
-    external: true
