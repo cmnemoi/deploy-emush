@@ -16,6 +16,7 @@ services:
       - api-public:/var/www/html/public:ro
     labels:
       - traefik.enable=true
+      - traefik.docker.network=traefik-proxy
       - traefik.http.routers.emush-api.rule=Host(`api.emush.${DOMAIN}`)
       - traefik.http.routers.emush-api.entrypoints=websecure
       - traefik.http.routers.emush-api.tls.certresolver=letsencrypt
@@ -42,6 +43,7 @@ services:
       - emush-web
     labels:
       - traefik.enable=true
+      - traefik.docker.network=traefik-proxy
       - traefik.http.routers.emush-app.rule=Host(`emush.${DOMAIN}`)
       - traefik.http.routers.emush-app.entrypoints=websecure
       - traefik.http.routers.emush-app.tls.certresolver=letsencrypt
@@ -121,6 +123,7 @@ services:
       start_period: 30s
     labels:
       - traefik.enable=true
+      - traefik.docker.network=traefik-proxy
       - traefik.http.routers.emush-eternaltwin.rule=Host(`eternaltwin.${DOMAIN}`)
       - traefik.http.routers.emush-eternaltwin.entrypoints=websecure
       - traefik.http.routers.emush-eternaltwin.tls.certresolver=letsencrypt
