@@ -25,3 +25,6 @@ hard-reset:
 restart:
 	docker compose down --remove-orphans
 	docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
+
+deploy-cmnemoi:
+	./deploy.cmnemoi.sh --beta
