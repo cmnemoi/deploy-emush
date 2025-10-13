@@ -137,3 +137,6 @@ volumes:
 networks:
   emush-network:
     driver: bridge
+  traefik-proxy:
+    external: true
+
