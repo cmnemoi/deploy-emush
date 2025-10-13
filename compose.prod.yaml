@@ -16,10 +16,10 @@ services:
       - api-public:/var/www/html/public:ro
     labels:
       - traefik.enable=true
-      - traefik.http.routers.emush-api.rule=Host(`api.emush.${DOMAIN}`)
-      - traefik.http.routers.emush-api.entrypoints=websecure
-      - traefik.http.routers.emush-api.tls.certresolver=letsencrypt
-      - traefik.http.services.emush-api.loadbalancer.server.port=80
+      - traefik.http.routers.emush-web.rule=Host(`api.emush.${DOMAIN}`)
+      - traefik.http.routers.emush-web.entrypoints=websecure
+      - traefik.http.routers.emush-web.tls.certresolver=letsencrypt
+      - traefik.http.services.emush-web.loadbalancer.server.port=80
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost/health || exit 1"]
       interval: 30s
