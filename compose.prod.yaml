@@ -21,6 +21,7 @@ services:
       - traefik.http.routers.emush-web.entrypoints=websecure
       - traefik.http.routers.emush-web.tls.certresolver=letsencrypt
       - traefik.http.services.emush-web.loadbalancer.server.port=80
+      - traefik.docker.network=traefik-proxy
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost/health || exit 1"]
       interval: 30s
@@ -48,6 +49,7 @@ services:
       - traefik.http.routers.emush-app.entrypoints=websecure
       - traefik.http.routers.emush-app.tls.certresolver=letsencrypt
       - traefik.http.services.emush-app.loadbalancer.server.port=5173
+      - traefik.docker.network=traefik-proxy
     healthcheck:
       test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:5173/health"]
       interval: 30s
@@ -113,7 +115,7 @@ services:
       - emush-database
     networks:
       - emush-network
-      - traefik-proxy  # Ajout du réseau Traefik
+      - traefik-proxy
     restart: unless-stopped
     healthcheck:
       test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost:50320/ || exit 1"]
@@ -127,6 +129,7 @@ services:
       - traefik.http.routers.emush-eternaltwin.entrypoints=websecure
       - traefik.http.routers.emush-eternaltwin.tls.certresolver=letsencrypt
       - traefik.http.services.emush-eternaltwin.loadbalancer.server.port=50320
+      - traefik.docker.network=traefik-proxy
 
 volumes:
   emush-database-data:
