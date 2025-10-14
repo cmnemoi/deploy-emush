@@ -11,7 +11,8 @@ services:
       - traefik-proxy
     restart: unless-stopped
     depends_on:
-      - emush-api
+      emush-api:
+        condition: service_healthy
     volumes:
       - api-public:/var/www/html/public:ro
     labels:
@@ -39,7 +40,8 @@ services:
     env_file:
       - .env
     depends_on:
-      - emush-web
+      emush-web:
+        condition: service_healthy
     labels:
       - traefik.enable=true
       - traefik.http.routers.emush-app.rule=Host(`emush.${DOMAIN}`)
