@@ -30,7 +30,7 @@ RUN addgroup -g 1001 -S nodejs \
     && adduser -S vuejs -u 1001
 
 # Install security updates
-RUN apk upgrade --no-cache
+RUN apk update && apk upgrade --no-cache
 
 # Create web directory
 RUN mkdir -p /srv
