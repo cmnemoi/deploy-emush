@@ -131,6 +131,27 @@ services:
       - traefik.http.services.emush-eternaltwin.loadbalancer.server.port=50320
       - traefik.docker.network=traefik-proxy
 
+  emush-jaeger:
+    container_name: emush-jaeger
+    image: jaegertracing/jaeger:2.11.0
+    networks:
+      - emush-network
+      - traefik-proxy
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:13133/status"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.emush-jaeger.rule=Host(`jaeger.emush.${DOMAIN}`)
+      - traefik.http.routers.emush-jaeger.entrypoints=websecure
+      - traefik.http.routers.emush-jaeger.tls.certresolver=letsencrypt
+      - traefik.http.services.emush-jaeger.loadbalancer.server.port=16686
+      - traefik.docker.network=traefik-proxy
+
 volumes:
   emush-database-data:
     driver: local
