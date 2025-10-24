@@ -13,8 +13,6 @@ services:
     depends_on:
       emush-api:
         condition: service_healthy
-    volumes:
-      - api-public:/var/www/html/public:ro
     labels:
       - traefik.enable=true
       - traefik.http.routers.emush-web.rule=Host(`api.emush.${DOMAIN}`)
@@ -71,7 +69,6 @@ services:
     depends_on:
       - emush-database
     volumes:
-      - api-public:/var/www/html/public
       - jwt-keys:/var/www/html/config/jwt
     healthcheck:
       test: ["CMD", "php-fpm", "-t"]
@@ -154,8 +151,6 @@ services:
 
 volumes:
   emush-database-data:
-    driver: local
-  api-public:
     driver: local
   jwt-keys:
     driver: local
