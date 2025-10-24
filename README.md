@@ -8,7 +8,12 @@ An autonomous repository to deploy / self-host [eMush](https://gitlab.com/eterna
 
 - A GNU/Linux server. This installation has been tested on Pop!_OS 22.04 and Ubuntu 25.04.
 - [Docker](https://docs.docker.com/get-docker/), Docker Compose and Make installed.
-- A domain name pointing to the server, and the following associated subdomains : `emush.yourdomain.com`, `api.emush.yourdomain.com`, `eternaltwin.yourdomain.com`.
+- A domain name pointing to the server, with the following associated subdomains:
+  - `emush.yourdomain.com`: the eMush website.
+  - `api.emush.yourdomain.com`: the eMush API, used by the website.
+  - `eternaltwin.yourdomain.com`: the Eternaltwin website and server, used for user authentication.
+  - `jaeger.emush.yourdomain.com`: the Jaeger UI, used to monitor logs and errors.
+
 [How to associate a Namecheap domain name to a server (in french)](https://claude.ai/share/4f787611-6d57-40b6-8624-cf08310f1c0c).
 
 I highly recommend you also add basic security to your server.
@@ -34,7 +39,7 @@ make deploy
   - `PORT`: The SSH port (usually 22).<
 - Go to Actions tab (https://github.com/your_username/deploy-emush/actions/workflows/deploy.yaml) tab and click on "Run workflow".
 
-The [workflow](https://github.com/cmnemoi/deploy-emush/blob/main/.github/workflows/deploy.yaml) of this repository is also programmed to deploy beta updates of eMush every 5 minutes, but you can edit it to your convenance.
+The [workflow](https://github.com/cmnemoi/deploy-emush/blob/main/.github/workflows/deploy.yaml) of this repository is also programmed to deploy beta updates of eMush every day at 3AM UTC, but you can edit it to your convenance.
 
 ## Deployment Channels
 
