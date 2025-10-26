@@ -1,6 +1,6 @@
 # Deploy eMush
 
-[![Deploy](https://github.com/cmnemoi/deploy-emush/actions/workflows/deploy.yaml/badge.svg)](https://github.com/cmnemoi/deploy-emush/actions/workflows/deploy.yaml)
+[![Deploy](https://github.com/cmnemoi/deploy-emush/actions/workflows/deploy-cmnemoi.yaml/badge.svg)](https://github.com/cmnemoi/deploy-emush/actions/workflows/deploy-cmnemoi.yaml)
 
 An autonomous repository to deploy / self-host [eMush](https://gitlab.com/eternaltwin/mush/mush).
 
