@@ -421,13 +421,13 @@ pull_latest_code() {
     case "${DEPLOYMENT_CHANNEL}" in
         "beta"|"develop")
             log_info "Switching to beta (develop branch)"
-            git checkout develop
-            git pull origin develop
+            git checkout main
+            git pull origin main
             ;;
         "stable"|"master"|*)
             log_info "Switching to stable (master branch)"
-            git checkout master
-            git pull origin master
+            git checkout main
+            git pull origin main
             ;;
     esac
     
