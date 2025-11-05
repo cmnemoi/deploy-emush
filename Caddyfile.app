@@ -40,6 +40,16 @@
         Cache-Control "public, max-age=3600"
     }
     
+    # Prevent caching of index.html
+    @no_cache {
+        path /index.html
+    }
+    header @no_cache {
+        Cache-Control "no-cache, no-store, must-revalidate"
+        Pragma "no-cache"
+        Expires "0"
+    }
+    
     # Health check endpoint
     respond /health "healthy" 200
     
