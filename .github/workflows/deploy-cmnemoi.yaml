@@ -20,4 +20,6 @@ jobs:
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.SSH_KEY }}
           port: ${{ secrets.PORT }}
-          script: cd www && make deploy-cmnemoi
+          script: |
+            cd www
+            CI=true make deploy-cmnemoi
