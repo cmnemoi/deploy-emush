@@ -27,7 +27,7 @@ COPY emush/Api ./
 
 # Install production dependencies
 ENV COMPOSER_ALLOW_SUPERUSER=1
-RUN composer install --no-dev --optimize-autoloader --classmap-authoritative --no-interaction --no-progress --prefer-dist
+RUN composer install --no-dev --no-scripts --optimize-autoloader --classmap-authoritative --no-interaction --no-progress --prefer-dist
 
 # Stage 2: Final production image
 FROM base AS production
