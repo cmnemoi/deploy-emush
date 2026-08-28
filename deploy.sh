@@ -61,29 +61,45 @@ ensure_env_files() {
     fi
 }
 
+normalize_domain() {
+	# "https://example.com/" -> "example.com"
+	local domain="$1"
+	domain="${domain#http://}"
+	domain="${domain#https://}"
+	printf '%s' "${domain%/}"
+}
+
 prompt_for_domain() {
-	# Ask user for domain and persist to .env
-	# Defaults to existing value or "localhost" if missing
-	local current
+	# Resolve DOMAIN from, in order: the environment, .env, an interactive prompt.
+	local current from_env input
 	current="$(read_env_var DOMAIN)"
-	if [ -z "${current:-}" ]; then
-		current="localhost"
-	fi
-	# Only prompt if still at default value
-	if [ "${current}" != "localhost" ]; then
+
+	# The environment wins, and is the only way to set the domain non-interactively.
+	if [ -n "${DOMAIN:-}" ]; then
+		from_env="$(normalize_domain "${DOMAIN}")"
+		if [ "${from_env}" != "${current}" ]; then
+			log_info "Updating DOMAIN to ${from_env}"
+		fi
+		upsert_env_var DOMAIN "${from_env}"
 		return 0
 	fi
-	printf "%s" "Enter domain name for this deployment [${current}]: "
-	read -r input || input=""
-	# Use default when user presses Enter
-	input="${input:-$current}"
-	# Normalize: strip protocol and trailing slash
-	input="${input#http://}"
-	input="${input#https://}"
-	input="${input%/}"
-	if [ "${input}" != "${current}" ]; then
-		log_info "Updating DOMAIN to ${input}"
+
+	# Already configured in .env: keep it.
+	if [ -n "${current:-}" ] && [ "${current}" != "localhost" ]; then
+		return 0
 	fi
+
+	# No terminal to prompt on. Fail instead of silently deploying to localhost.
+	if [ ! -t 0 ]; then
+		echo -e "${RED}ERROR:${NC} DOMAIN is not set in .env and there is no terminal to prompt on."
+		echo "Pass it explicitly, e.g.: DOMAIN=example.com $0"
+		exit 1
+	fi
+
+	printf "%s" "Enter domain name for this deployment [localhost]: "
+	read -r input || input=""
+	input="$(normalize_domain "${input:-localhost}")"
+	log_info "Updating DOMAIN to ${input}"
 	upsert_env_var DOMAIN "${input}"
 }
 
@@ -444,6 +460,9 @@ setup_env_variables() {
 	prompt_for_domain
     domain="$(read_env_var DOMAIN)"
     upsert_env_var VITE_ETERNALTWIN_URL "https://eternaltwin.${domain}/"
+    upsert_env_var EXTERNAL_URI "https://emush.${domain}"
+    # Browser-facing, and Eternaltwin is only served over TLS. Older .env files had http://.
+    upsert_env_var OAUTH_AUTHORIZATION_URI 'https://eternaltwin.${DOMAIN}/oauth/authorize'
     update_release_metadata "${commit_hash}"
     ensure_app_secret
     ensure_jwt_passphrase
