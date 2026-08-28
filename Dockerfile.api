@@ -6,18 +6,16 @@ RUN apk update && apk upgrade --no-cache && apk add --no-cache \
     icu-dev \
     postgresql-dev \
     protobuf-dev \
-    linux-headers \
+    && apk add --no-cache --virtual .build-deps $PHPIZE_DEPS linux-headers \
     && docker-php-ext-configure pgsql -with-pgsql=/usr/local/pgsql \
     && docker-php-ext-install -j$(nproc) \
         pdo \
         pdo_pgsql \
         pgsql \
         intl \
-        opcache \
-    && docker-php-ext-configure opcache --enable-opcache \
     && pecl install protobuf \
     && docker-php-ext-enable protobuf \
-    && apk del --no-cache linux-headers
+    && apk del --no-cache .build-deps
 
 # Install Composer
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
