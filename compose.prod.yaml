@@ -68,6 +68,8 @@ services:
       - .env
     depends_on:
       - emush-database
+    cap_add:
+      - SYS_PTRACE
     volumes:
       - jwt-keys:/var/www/html/config/jwt
     healthcheck:
