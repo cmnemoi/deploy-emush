@@ -22,4 +22,4 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd www
-            CI=true make deploy-beta
+            CI=true make deploy-main

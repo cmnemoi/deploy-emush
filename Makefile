@@ -5,15 +5,15 @@ all: deploy
 deploy:
 	./deploy.sh
 
-.PHONY: deploy-stable
-deploy-stable:
-	@echo "Deploying stable version (master branch)..."
-	./deploy.sh --stable
+.PHONY: deploy-main
+deploy-main:
+	@echo "Deploying main branch..."
+	./deploy.sh --main
 
-.PHONY: deploy-beta
-deploy-beta:
-	@echo "Deploying beta version (develop branch)..."
-	./deploy.sh --beta
+.PHONY: deploy-legacy
+deploy-legacy:
+	@echo "Deploying legacy branch..."
+	./deploy.sh --legacy
 
 .PHONY: hard-reset
 hard-reset:
@@ -27,4 +27,4 @@ restart:
 	docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
 
 deploy-cmnemoi:
-	./deploy.cmnemoi.sh --beta
+	./deploy.cmnemoi.sh --main

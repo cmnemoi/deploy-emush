@@ -2,7 +2,7 @@
 
 [![Deploy](https://github.com/cmnemoi/deploy-emush/actions/workflows/deploy-cmnemoi.yaml/badge.svg)](https://github.com/cmnemoi/deploy-emush/actions/workflows/deploy-cmnemoi.yaml)
 
-An autonomous repository to deploy / self-host [eMush](https://gitlab.com/eternaltwin/mush/mush).
+An autonomous repository to deploy / self-host [eMush](https://gitlab.com/cmnemoi/mush).
 
 # Prerequisites
 
@@ -39,30 +39,28 @@ make deploy
   - `PORT`: The SSH port (usually 22).<
 - Go to Actions tab (https://github.com/your_username/deploy-emush/actions/workflows/deploy.yaml) tab and click on "Run workflow".
 
-The [workflow](https://github.com/cmnemoi/deploy-emush/blob/main/.github/workflows/deploy.yaml) of this repository is also programmed to deploy beta updates of eMush every day at 3AM UTC, but you can edit it to your convenance.
+The [workflow](https://github.com/cmnemoi/deploy-emush/blob/main/.github/workflows/deploy.yaml) of this repository is also programmed to deploy updates of eMush every day at 3AM UTC, but you can edit it to your convenance.
 
 ## Deployment Channels
 
 eMush supports two deployment channels:
 
-- **Stable** (default): Uses the `master` branch : it's the same version deployed on [Eternaltwin eMush](https://emush.eternaltwin.org).
-- **Beta**: Uses the `develop` branch with the latest, non-published, features.
+- **Main** (default): Uses the `main` branch, with the latest features and gameplay changes.
+- **Legacy**: Uses the `legacy` branch, a version of eMush with a minimum of gameplay changes : only aesthetic / UI / ergonomics improvements and bug fixes.
 
 You can switch between channels using the following commands:
 
 ```bash
-make deploy-beta # or ./deploy.sh --beta
-make deploy # or make deploy-stable, ./deploy.sh --stable, ./deploy.sh
+make deploy-legacy # or ./deploy.sh --legacy
+make deploy # or make deploy-main, ./deploy.sh --main, ./deploy.sh
 ```
-
-**Note**: The beta channel may be unstable. Use it at your own risk.
 
 # License
 
 The deployment scripts and infrastructure as code in this repository are licensed under the [Apache License 2.0](LICENCE).
 
 However, eMush is double-licensed under the [AGPL 3.0 or later](https://www.gnu.org/licenses/agpl-3.0.html) and [CC-BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/).
-Please refer to its [README](https://gitlab.com/eternaltwin/mush/mush#license) for more details.
+Please refer to its [README](https://gitlab.com/cmnemoi/mush#license) for more details.
 
 # Support
 

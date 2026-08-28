@@ -13,29 +13,29 @@ log_warn() { echo -e "${YELLOW}$1${NC}"; }
 log_ok() { echo -e "${GREEN}$1${NC}"; }
 
 # Parse command line arguments
-DEPLOYMENT_CHANNEL="stable"
+DEPLOYMENT_CHANNEL="main"
 while [[ $# -gt 0 ]]; do
     case $1 in
-        --beta)
-            DEPLOYMENT_CHANNEL="beta"
+        --main)
+            DEPLOYMENT_CHANNEL="main"
             shift
             ;;
-        --stable)
-            DEPLOYMENT_CHANNEL="stable"
+        --legacy)
+            DEPLOYMENT_CHANNEL="legacy"
             shift
             ;;
         --help|-h)
             echo "Usage: $0 [OPTIONS]"
             echo ""
             echo "Options:"
-            echo "  --beta     Deploy beta version (develop branch)"
-            echo "  --stable   Deploy stable version (master branch) [default]"
+            echo "  --main     Deploy main branch [default]"
+            echo "  --legacy   Deploy legacy branch"
             echo "  --help, -h Show this help message"
             echo ""
             echo "Examples:"
-            echo "  $0              # Deploy stable (default)"
-            echo "  $0 --beta       # Deploy beta version"
-            echo "  $0 --stable     # Deploy stable version"
+            echo "  $0              # Deploy main (default)"
+            echo "  $0 --main       # Deploy main branch"
+            echo "  $0 --legacy     # Deploy legacy branch"
             exit 0
             ;;
         *)
@@ -419,13 +419,13 @@ pull_latest_code() {
     git fetch origin
     
     case "${DEPLOYMENT_CHANNEL}" in
-        "beta"|"develop")
-            log_info "Switching to beta (develop branch)"
-            git checkout main
-            git pull origin main
+        "legacy")
+            log_info "Switching to legacy branch"
+            git checkout legacy
+            git pull origin legacy
             ;;
-        "stable"|"master"|*)
-            log_info "Switching to stable (master branch)"
+        "main"|*)
+            log_info "Switching to main branch"
             git checkout main
             git pull origin main
             ;;
