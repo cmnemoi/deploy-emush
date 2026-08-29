@@ -2,6 +2,12 @@ name: Deploy (cmnemoi)
 
 on:
   workflow_dispatch:
+    inputs:
+      channel:
+        description: Branch to deploy
+        type: choice
+        options: [main, legacy]
+        default: main
 
 jobs:
   deploy:
@@ -22,4 +28,4 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd www
-            CI=true make deploy-cmnemoi
+            CI=true ./deploy.cmnemoi.sh --${{ inputs.channel }}
