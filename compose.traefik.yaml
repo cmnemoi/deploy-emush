@@ -10,7 +10,6 @@ services:
       - --entrypoints.web.forwardedHeaders.insecure=true
       - --entrypoints.websecure.address=:443
       - --entrypoints.websecure.forwardedHeaders.insecure=true
-      - --entrypoints.websecure.http3=true
       # Redirection HTTP -> HTTPS
       - --entrypoints.web.http.redirections.entrypoint.to=websecure
       - --entrypoints.web.http.redirections.entrypoint.scheme=https
@@ -22,7 +21,6 @@ services:
     ports:
       - 80:80
       - 443:443
-      - 443:443/udp
     networks:
       - traefik-proxy
     restart: unless-stopped
