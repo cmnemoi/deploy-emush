@@ -2,7 +2,7 @@ name: emush
 
 services:
   traefik:
-    image: traefik:3.5
+    image: traefik:v3.6
     container_name: emush-traefik
     command:
       - --providers.docker=true
@@ -157,7 +157,7 @@ services:
 
   emush-jaeger:
     container_name: emush-jaeger
-    image: jaegertracing/jaeger:2.11.0
+    image: jaegertracing/jaeger:2.22.0
     networks:
       - emush-network
     restart: unless-stopped
