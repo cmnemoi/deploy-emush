@@ -12,6 +12,11 @@ on:
   schedule:
     - cron: "0 5 * * 1"
 
+# Deploy one run at a time: two concurrent `docker compose up` collide while recreating containers.
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
