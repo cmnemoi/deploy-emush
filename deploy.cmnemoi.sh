@@ -492,10 +492,10 @@ launch_app() {
     docker compose build
     docker compose run --rm emush-api php bin/console lexik:jwt:generate-keypair --no-interaction --skip-if-exists
     docker compose run --rm emush-eternaltwin yarn eternaltwin db sync
-    docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
+    docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 60
     docker compose run --rm emush-api php bin/console mush:migrate
     ensure_admin_id_from_database
-    docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 15
+    docker compose up --force-recreate --remove-orphans -d --wait --wait-timeout 60
     echo -e "${GREEN}App launched at ${APP_URL}${NC}"
     
     # Only display admin credentials if not in CI environment
