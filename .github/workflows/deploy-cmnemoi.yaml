@@ -8,6 +8,9 @@ on:
         type: choice
         options: [main, legacy]
         default: main
+  # Rebuild every week to pick up security fixes of the base images.
+  schedule:
+    - cron: "0 5 * * 1"
 
 jobs:
   deploy:
@@ -28,4 +31,4 @@ jobs:
           port: ${{ secrets.PORT }}
           script: |
             cd www
-            CI=true ./deploy.cmnemoi.sh --${{ inputs.channel }}
+            CI=true ./deploy.cmnemoi.sh --${{ inputs.channel || 'legacy' }}
