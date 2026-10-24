@@ -3,6 +3,7 @@ name: emush
 services:
   emush-web:
     container_name: emush-web
+    ports: ["127.0.0.1:8171:80"]
     build:
       context: .
       dockerfile: Dockerfile.web
@@ -29,6 +30,7 @@ services:
   
   emush-app:
     container_name: emush-app
+    ports: ["127.0.0.1:8170:5173"]
     build:
       context: .
       dockerfile: Dockerfile.app
@@ -104,6 +106,7 @@ services:
 
   emush-eternaltwin:
     container_name: emush-eternaltwin
+    ports: ["127.0.0.1:8172:50320"]
     build:
       context: .
       dockerfile: Dockerfile.eternaltwin
