@@ -3,7 +3,7 @@ name: emush
 services:
   emush-web:
     container_name: emush-web
-    expose: ["80"]
+    expose: ["8080"]
     build:
       context: .
       dockerfile: Dockerfile.web
@@ -14,7 +14,7 @@ services:
       emush-api:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost:8080/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3

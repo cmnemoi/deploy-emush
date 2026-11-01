@@ -1,4 +1,7 @@
-FROM nginx:stable-alpine
+# The nginx master runs unprivileged too, hence port 8080.
+FROM nginxinc/nginx-unprivileged:stable-alpine
+
+USER root
 
 ARG APP_DIR=/var/www/html
 
@@ -13,10 +16,12 @@ COPY emush/Api/public ${APP_DIR}/public
 # Nginx configuration
 COPY nginx.api.conf /etc/nginx/nginx.conf
 
-EXPOSE 80
+USER nginx
+
+EXPOSE 8080
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=5s --retries=3 \
-    CMD curl -fsS http://localhost/health || exit 1
+    CMD curl -fsS http://localhost:8080/health || exit 1
 
 # Run Nginx in foreground
 CMD ["nginx", "-g", "daemon off;"]

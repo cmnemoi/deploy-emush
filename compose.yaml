@@ -50,9 +50,9 @@ services:
       - traefik.http.routers.emush-api.rule=Host(`api.emush.${DOMAIN}`)
       - traefik.http.routers.emush-api.entrypoints=websecure
       - traefik.http.routers.emush-api.tls.certresolver=letsencrypt
-      - traefik.http.services.emush-api.loadbalancer.server.port=80
+      - traefik.http.services.emush-api.loadbalancer.server.port=8080
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost/health || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS -o /dev/null http://localhost:8080/health || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3
