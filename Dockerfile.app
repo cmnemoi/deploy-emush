@@ -12,7 +12,8 @@ WORKDIR /app
 COPY emush/App/ ./
 
 # Install dependencies with frozen lockfile for reproducible builds
-RUN corepack enable && yarn install --immutable
+# Node no longer bundles corepack since version 25.
+RUN npm install --global corepack && corepack enable && yarn install --immutable
 
 # Copy .env file for build-time environment variables
 COPY .env ./
@@ -32,19 +33,17 @@ RUN addgroup -g 1001 -S nodejs \
 # Install security updates
 RUN apk update && apk upgrade --no-cache
 
+# Caddy listens on 5173 and does not need the capability the image grants to bind low ports
+RUN setcap -r /usr/bin/caddy
+
 # Create web directory
 RUN mkdir -p /srv
 
-# Copy built application from builder stage
-COPY --from=builder --chown=vuejs:nodejs /app/dist /srv
+# Copy built application from builder stage: owned by root, so Caddy cannot modify what it serves
+COPY --from=builder /app/dist /srv
 
 # Copy Caddyfile configuration
 COPY Caddyfile.app /etc/caddy/Caddyfile
-
-# Set proper permissions for Caddy
-RUN chown -R vuejs:nodejs /srv \
-    && chown -R vuejs:nodejs /etc/caddy \
-    && chown vuejs:nodejs /etc/caddy/Caddyfile
 
 # Switch to non-root user (Caddy can run as non-root user)
 USER vuejs
