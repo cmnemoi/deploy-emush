@@ -13,7 +13,7 @@ log_warn() { echo -e "${YELLOW}$1${NC}"; }
 log_ok() { echo -e "${GREEN}$1${NC}"; }
 
 # Production overlay, picked up by every `docker compose` call below.
-export COMPOSE_FILE="compose.prod.yaml"
+export COMPOSE_FILE="compose.prod.yaml:$HOME/compose.vps.yaml"
 
 # Parse command line arguments
 DEPLOYMENT_CHANNEL="main"
