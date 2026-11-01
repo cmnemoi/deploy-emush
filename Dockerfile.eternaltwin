@@ -13,7 +13,8 @@ RUN groupmod -o -g ${GID} node \
  && mkdir -p /home/node \
  && chown -R node:node /home/node /www
 
-RUN corepack enable
+# Node no longer bundles corepack since version 25.
+RUN npm install --global corepack && corepack enable
 
 COPY --chown=node:node emush/Eternaltwin/package.json emush/Eternaltwin/yarn.lock ./
 COPY --chown=node:node eternaltwin.local.toml ./eternaltwin.toml
