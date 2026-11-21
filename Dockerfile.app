@@ -24,7 +24,7 @@ RUN yarn build
 # ================================
 # Stage 2: Production Stage
 # ================================
-FROM caddy:2.10 AS production
+FROM caddy:2.11 AS production
 
 # Add non-root user for security
 RUN addgroup -g 1001 -S nodejs \
